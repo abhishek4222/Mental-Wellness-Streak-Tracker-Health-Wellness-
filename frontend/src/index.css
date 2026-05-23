@@ -71,16 +71,24 @@
 
 /* Light Mode Overrides */
 [data-theme='light'] {
-  --bg-gradient-start: #F8FAFC;
-  --bg-gradient-via: #F1F5F9;
-  --bg-gradient-end: #E2E8F0;
-  --card-bg: rgba(255, 255, 255, 0.85);
+  --bg-gradient-start: #F0F4FF; /* Serene warm indigo aura */
+  --bg-gradient-via: #FCF8F7;   /* Delicate white-peach warmth */
+  --bg-gradient-end: #F5F3FF;   /* Serene lavender-violet dream */
+  --card-bg: rgba(255, 255, 255, 0.72); /* Premium frosted milky glass */
   --card-border: rgba(108, 99, 255, 0.08);
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
+  --text-primary: #1E1B4B;      /* Deep indigo for highly premium readability */
+  --text-secondary: #4F46E5;    /* Vibrant violet subtext */
   --accent-color: #6C63FF;
-  --accent-glow: rgba(108, 99, 255, 0.1);
+  --accent-glow: rgba(108, 99, 255, 0.16);
 }
+
+/* Light Theme Contrast Enhancements for Hardcoded Text Classes */
+[data-theme='light'] .text-slate-100 { color: #0F172A !important; }
+[data-theme='light'] .text-slate-200 { color: #1E293B !important; }
+[data-theme='light'] .text-slate-300 { color: #334155 !important; }
+[data-theme='light'] .text-slate-400 { color: #475569 !important; }
+[data-theme='light'] .text-slate-500 { color: #64748B !important; }
+[data-theme='light'] .text-slate-600 { color: #94A3B8 !important; }
 
 body {
   margin: 0;

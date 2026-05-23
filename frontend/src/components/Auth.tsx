@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { apiService } from '../services/api';
-import { Sparkles, Mail, Lock, User as UserIcon, ShieldAlert, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Sparkles, Mail, Lock, User as UserIcon, ShieldAlert, ArrowRight, ShieldCheck, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Auth() {
@@ -13,6 +13,7 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState('');
 
   // States
@@ -193,13 +194,21 @@ export default function Auth() {
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-3.5 text-slate-500" size={18} />
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all"
+                        className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-3 pl-11 pr-11 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300 transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                   </div>
 

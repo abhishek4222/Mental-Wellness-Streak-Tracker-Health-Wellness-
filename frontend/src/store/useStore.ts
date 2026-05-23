@@ -332,7 +332,8 @@ export const useStore = create<WellnessStore>()(
         }
 
         // Apply theme attributes in document
-        const theme = get().profile.activeTheme || 'midnight_oasis';
+        const isLight = get().profile.darkMode;
+        const theme = isLight ? 'light' : (get().profile.activeTheme || 'midnight_oasis');
         document.documentElement.setAttribute('data-theme', theme);
         
         // Sync leaderboard
@@ -824,6 +825,10 @@ export const useStore = create<WellnessStore>()(
         };
         set({ darkMode: nextDarkMode, profile: updatedProfile });
 
+        // Apply theme attributes in document
+        const theme = nextDarkMode ? 'light' : (updatedProfile.activeTheme || 'midnight_oasis');
+        document.documentElement.setAttribute('data-theme', theme);
+
         if (get().dbStatus.connected && get().user.authenticated) {
           apiService.updateProfile(updatedProfile).catch((err) => {
             console.error('Failed to sync dark mode in MongoDB:', err);
@@ -862,7 +867,8 @@ export const useStore = create<WellnessStore>()(
             });
             
             // Set dynamic theme
-            const theme = dbProfile.activeTheme || state.profile.activeTheme || 'midnight_oasis';
+            const isLight = dbProfile.darkMode || state.profile.darkMode;
+            const theme = isLight ? 'light' : (dbProfile.activeTheme || state.profile.activeTheme || 'midnight_oasis');
             document.documentElement.setAttribute('data-theme', theme);
             get().syncLeaderboard();
           } catch (e) {
@@ -945,9 +951,10 @@ export const useStore = create<WellnessStore>()(
           xp: state.profile.xp - cost,
           purchasedThemes: [...state.profile.purchasedThemes, themeId],
           activeTheme: themeId,
+          darkMode: false, // Ensure light mode is turned off when activating custom skin
         };
 
-        set({ profile: updatedProfile });
+        set({ profile: updatedProfile, darkMode: false });
         document.documentElement.setAttribute('data-theme', themeId);
 
         if (get().dbStatus.connected && get().user.authenticated) {
@@ -965,9 +972,10 @@ export const useStore = create<WellnessStore>()(
         const updatedProfile = {
           ...state.profile,
           activeTheme: themeId,
+          darkMode: false, // Ensure light mode is turned off when activating custom skin
         };
 
-        set({ profile: updatedProfile });
+        set({ profile: updatedProfile, darkMode: false });
         document.documentElement.setAttribute('data-theme', themeId);
 
         if (get().dbStatus.connected && get().user.authenticated) {

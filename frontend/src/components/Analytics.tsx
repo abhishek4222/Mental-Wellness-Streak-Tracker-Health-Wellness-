@@ -7,6 +7,7 @@ import { MOOD_EMOJIS } from '../types';
 export default function Analytics() {
   const { habits, logs, getCompletionRate, getMoodData } = useStore();
   const [selectedPeriod, setSelectedPeriod] = useState<30 | 90>(30);
+  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   
   const activeHabits = useMemo(
     () => habits.filter(h => !h.isArchived),
@@ -183,10 +184,18 @@ export default function Analytics() {
               ? (dayData.completed / dayData.total) * 100 
               : 0;
             
+            const isSelected = dateStr === selectedDate;
+            
             return (
-              <div
+              <button
                 key={index}
-                className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all hover:scale-115 cursor-help ${
+                type="button"
+                onClick={() => setSelectedDate(dateStr)}
+                className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all hover:scale-115 active:scale-95 cursor-pointer relative ${
+                  isSelected 
+                    ? 'ring-2 ring-violet-400 scale-105 shadow-[0_0_12px_rgba(108,99,255,0.4)] z-10' 
+                    : ''
+                } ${
                   completionPercent === 100 
                     ? 'bg-emerald-500 text-slate-950 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
                     : completionPercent >= 50
@@ -198,7 +207,7 @@ export default function Analytics() {
                 title={`${dateStr}: completed ${dayData.completed}/${dayData.total} habits${dayData.mood ? ` • Mood: ${MOOD_EMOJIS[dayData.mood - 1]}` : ''}`}
               >
                 {format(day, 'd')}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -223,6 +232,94 @@ export default function Analytics() {
           </div>
         </div>
       </div>
+
+      {/* Selected Date Habit Performance Breakdown */}
+      {(() => {
+        const parsedDate = parseISO(selectedDate);
+        const formattedSelectedDate = format(parsedDate, 'MMMM d, yyyy');
+        
+        const dayLogs = logs.filter(log => log.date === selectedDate);
+        const dayMoodLog = dayLogs.find(log => log.mood !== undefined);
+        const moodScore = dayMoodLog?.mood;
+        
+        const activeHabitIds = new Set(activeHabits.map(h => h.id));
+        const relevantLogs = dayLogs.filter(log => activeHabitIds.has(log.habitId));
+        const completedLogs = relevantLogs.filter(log => log.completed);
+        
+        return (
+          <div className="glass-card rounded-3xl p-5 border border-white/5 bg-slate-900/40 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-white/5 pb-3">
+              <div>
+                <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300">
+                  Daily History Checklist: {formattedSelectedDate}
+                </h3>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+                  Click any calendar day above to inspect past stats
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-violet-400 bg-violet-600/10 border border-violet-500/20 px-2.5 py-0.5 rounded-full shrink-0">
+                  {activeHabits.length > 0 ? Math.round((completedLogs.length / activeHabits.length) * 100) : 0}% Done
+                </span>
+                {moodScore !== undefined && (
+                  <span className="text-xs font-black text-amber-400 bg-amber-600/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full shrink-0">
+                    Mood: {MOOD_EMOJIS[moodScore - 1]}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {activeHabits.map((habit) => {
+                const habitId = habit.id ?? (habit as any)._id;
+                const log = dayLogs.find(l => l.habitId === habitId);
+                const isCompleted = log?.completed ?? false;
+                const isFrozen = log?.isFrozen ?? false;
+                const progress = log?.progress ?? 0;
+
+                return (
+                  <div 
+                    key={habitId} 
+                    className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-colors ${
+                      isCompleted 
+                        ? 'border-emerald-500/25 bg-emerald-950/10' 
+                        : isFrozen 
+                          ? 'border-cyan-500/25 bg-cyan-950/10'
+                          : 'border-white/5 bg-slate-950/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-xl shrink-0">{habit.icon}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-xs text-slate-200 truncate">{habit.name}</h4>
+                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                          {habit.target ? `${progress} of ${habit.target} steps` : isCompleted ? 'Completed' : 'Not completed'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      isCompleted 
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25' 
+                        : isFrozen 
+                          ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/25'
+                          : 'bg-slate-900 text-slate-500 border border-white/5'
+                    }`}>
+                      {isCompleted ? '✓ Completed' : isFrozen ? '❄️ Frozen' : '× Missed'}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {activeHabits.length === 0 && (
+                <div className="col-span-2 text-center py-6 text-xs text-slate-500 font-medium">
+                  No habits configured for this day.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Per-Habit breakdowns */}
       <div className="glass-card rounded-3xl p-5 border border-white/5 bg-slate-900/40">
