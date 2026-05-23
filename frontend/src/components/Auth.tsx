@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { apiService } from '../services/api';
 import { Sparkles, Mail, Lock, User as UserIcon, ShieldAlert, ArrowRight, ShieldCheck, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Auth() {
+interface AuthProps {
+  initialIsLogin?: boolean;
+}
+
+export default function Auth({ initialIsLogin = true }: AuthProps) {
   const { login } = useStore();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
+
+  useEffect(() => {
+    setIsLogin(initialIsLogin);
+  }, [initialIsLogin]);
   const [step, setStep] = useState<'form' | 'otp'>('form'); // 'form' | 'otp'
   
   // Input fields
@@ -119,7 +127,12 @@ export default function Auth() {
                 {/* Form header selector tab */}
                 <div className="flex bg-slate-950/60 p-1.5 rounded-2xl border border-white/5 mb-6">
                   <button
-                    onClick={() => { setIsLogin(true); setError(null); }}
+                    onClick={() => { 
+                      setIsLogin(true); 
+                      setError(null); 
+                      window.history.pushState({}, '', '/login');
+                      window.dispatchEvent(new Event('popstate'));
+                    }}
                     className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all ${
                       isLogin 
                         ? 'bg-violet-600 text-white shadow-md' 
@@ -129,7 +142,12 @@ export default function Auth() {
                     Login
                   </button>
                   <button
-                    onClick={() => { setIsLogin(false); setError(null); }}
+                    onClick={() => { 
+                      setIsLogin(false); 
+                      setError(null); 
+                      window.history.pushState({}, '', '/signup');
+                      window.dispatchEvent(new Event('popstate'));
+                    }}
                     className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all ${
                       !isLogin 
                         ? 'bg-violet-600 text-white shadow-md' 

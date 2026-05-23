@@ -7,6 +7,7 @@ import Store from './components/Store';
 import Analytics from './components/Analytics';
 import HabitManager from './components/HabitManager';
 import SageCoach from './components/SageCoach';
+import LandingPage from './components/LandingPage';
 import { 
   Sparkles, 
   LayoutDashboard, 
@@ -27,14 +28,39 @@ export default function App() {
   const { user, profile, initializeDefaults, logout, toggleDarkMode } = useStore();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
-  // Initialize data on mount
+  // Initialize data on mount and listen to dynamic popstate URL changes
   useEffect(() => {
     initializeDefaults();
+
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  // Perform dynamic routing if the user is not authenticated.
+  // Authenticated users bypass these and always view the main dashboard layout.
   if (!user.authenticated) {
-    return <Auth />;
+    if (currentPath === '/login') {
+      return <Auth initialIsLogin={true} />;
+    }
+    if (currentPath === '/signup') {
+      return <Auth initialIsLogin={false} />;
+    }
+    return <LandingPage onNavigate={navigate} />;
   }
 
   // Get current visual border frame class based on profile selection
@@ -147,7 +173,7 @@ export default function App() {
             )}
           </button>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-all"
           >
             <LogOut size={14} />
@@ -223,7 +249,7 @@ export default function App() {
                 <span>Theme</span>
               </button>
               <button
-                onClick={() => { logout(); setMobileMenuOpen(false); }}
+                onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                 className="flex-1 py-2.5 rounded-xl border border-rose-500/10 bg-rose-500/5 flex items-center justify-center gap-1.5 text-xs font-bold text-rose-400"
               >
                 <LogOut size={14} />
