@@ -115,6 +115,23 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+// HEALTH CHECK
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date(),
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date(),
+  });
+});
+
 // AUTHENTICATION
 app.post('/api/auth/register', async (req, res) => {
   try {
