@@ -1,0 +1,14 @@
+# Netlify Configuration File at Repository Root
+
+[build]
+  # Tell Netlify that the frontend resides in the 'frontend' subdirectory
+  base = "frontend"
+  # The output directory after building Vite (relative to base)
+  publish = "dist"
+  # The build command to run inside the base directory
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
